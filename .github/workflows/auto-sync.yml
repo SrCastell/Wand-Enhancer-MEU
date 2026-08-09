@@ -2,16 +2,27 @@ name: Auto Sync Upstream
 
 on:
   schedule:
-    # Executa automaticamente todos os dias à meia-noite (UTC)
+    # Executa todos os dias à meia-noite (UTC)
     - cron: '0 0 * * *'
-  workflow_dispatch: # Permite que você rode manualmente se desejar
+  workflow_dispatch: # Permite rodar manualmente a qualquer momento
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      workflows: write # Esta linha concede permissão para atualizar arquivos de workflow!
+
     steps:
-      - name: Sincronizar com o Repositório Original
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sincronizar com Upstream
         run: |
-          gh repo sync SrCastell/Wand-Enhancer-MEU -b master
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/k1tbyte/Wand-Enhancer.git || true
+          git fetch upstream
+          git checkout master
+          git merge upstream/master --no-edit
+          git push origin master
