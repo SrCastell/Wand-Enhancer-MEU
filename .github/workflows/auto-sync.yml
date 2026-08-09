@@ -1,0 +1,17 @@
+name: Auto Sync Upstream
+
+on:
+  schedule:
+    # Executa automaticamente todos os dias à meia-noite (UTC)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Permite que você rode manualmente se desejar
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sincronizar com o Repositório Original
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh repo sync SrCastell/Wand-Enhancer-MEU -b master
