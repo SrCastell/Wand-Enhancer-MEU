@@ -4,7 +4,7 @@ on:
   schedule:
     # Executa todos os dias à meia-noite (UTC)
     - cron: '0 0 * * *'
-  workflow_dispatch: # Permite rodar manualmente
+  workflow_dispatch: # Permite rodar manualmente a qualquer momento
 
 jobs:
   sync:
@@ -24,6 +24,25 @@ jobs:
               });
               console.log('Sincronização concluída com sucesso:', response.data);
             } catch (error) {
-              console.error('Erro ao sincronizar:', error.message);
+              // Se não houver nada para sincronizar (já atualizado), avisa no log
+              console.log('Aviso/Erro na sincronização:', error.message);
+            }
+
+      - name: Disparar Workflow de Build
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PAT_SYNC_TOKEN }}
+          script: |
+            try {
+              // Procura o arquivo de workflow do build (build.yml ou similar)
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'build.yml', // Nome do arquivo YAML do build no repositório
+                ref: 'master',
+              });
+              console.log('Workflow de Build disparado com sucesso!');
+            } catch (error) {
+              console.error('Erro ao disparar o build:', error.message);
               core.setFailed(error.message);
             }
